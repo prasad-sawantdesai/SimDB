@@ -1275,14 +1275,18 @@ def write_manifest_file(legacy_yaml_file: str, output_directory: str = None):
                     composition[species_name]["value"] = properties["n_over_ne"]
 
             summary["composition"] = composition
-        manifest_metadata.update(summary)
+
+        summary_list = []
+        for key, value in summary.items():
+            summary_list.append({key: value})
+
         out_data = {
             "manifest_version": 2,
             "responsible_name": legacy_yaml_data["responsible_name"],
             "alias": alias,
             "outputs": [{"uri": uri}],
             "inputs": [],
-            "metadata": [manifest_metadata],
+            "metadata": summary_list,
         }
 
         # manifest_file_path = os.path.join(os.path.dirname(legacy_yaml_file), f"manifest_{shot:06d}{run:04d}.yaml")
