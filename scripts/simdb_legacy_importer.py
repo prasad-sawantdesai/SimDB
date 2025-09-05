@@ -531,7 +531,7 @@ def get_dataset_description(legacy_yaml_data: dict, ids_summary=None, ids_datase
     _description_yaml = flatten_description(legacy_yaml_data["free_description"])
     _description_yaml = _description_yaml.replace("\\n", "\n")
     description_yaml = (
-        "reference_name:" + str(legacy_yaml_data["reference_name"]) + "\ndescription:" + _description_yaml
+        "reference_name: " + str(legacy_yaml_data["reference_name"]) + "\ndescription:" + _description_yaml
     )
     scenario_key_parameters = "scenario_key_parameters:\n"
     for key, value in legacy_yaml_data["scenario_key_parameters"].items():
@@ -575,11 +575,11 @@ def get_dataset_description(legacy_yaml_data: dict, ids_summary=None, ids_datase
                 output_parts.append(formatted)
         output = ",".join(output_parts)
 
-        description_yaml += f"plasma_composition:{output}"
+        description_yaml += f"plasma_composition: {output}"
 
     density_peaking_yaml = legacy_yaml_data["scenario_key_parameters"].get("density_peaking", "")
     if density_peaking_yaml != "tbd" and density_peaking_yaml != "":
-        description_yaml += f"\ndensity_peaking:{density_peaking_yaml}"
+        description_yaml += f"\ndensity_peaking: {density_peaking_yaml}"
     description_yaml = Literal(description_yaml)
     dataset_description["description"] = description_yaml
 
@@ -1275,7 +1275,7 @@ def write_manifest_file(legacy_yaml_file: str, output_directory: str = None):
                     composition[species_name]["value"] = properties["n_over_ne"]
 
             summary["composition"] = composition
-        manifest_metadata["summary"] = summary
+        manifest_metadata.update(summary)
         out_data = {
             "manifest_version": 2,
             "responsible_name": legacy_yaml_data["responsible_name"],
