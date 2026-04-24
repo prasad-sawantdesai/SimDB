@@ -22,6 +22,7 @@ test_manifest.yml
 /test-reports/
 /tests/cli/test.cfg
 /tests/cli/*.yaml
+/tests/remote/api/test_data_files/
 .eggs
 .coverage
 *.xml
@@ -31,3 +32,4 @@ src/simdb/_version.py
 *.egg-info
 *.egg
 *.whl
+myenv

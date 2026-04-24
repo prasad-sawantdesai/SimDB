@@ -18,7 +18,10 @@ def _custom_hook(obj: Dict[str, str]) -> Any:
     if "_type" in obj:
         if obj["_type"] == "numpy.ndarray":
             np_bytes = base64.decodebytes(obj["bytes"].encode())
-            return np.frombuffer(np_bytes, dtype=obj["dtype"])
+            arr = np.frombuffer(np_bytes, dtype=obj["dtype"])
+            if "shape" in obj:
+                arr = arr.reshape(obj["shape"])
+            return arr
         elif obj["_type"] == "uuid.UUID":
             return uuid.UUID(obj["hex"])
         else:
@@ -46,6 +49,7 @@ class CustomEncoder(json.JSONEncoder):
             return {
                 "_type": "numpy.ndarray",
                 "dtype": o.dtype.name,
+                "shape": list(o.shape),
                 "bytes": encoded_bytes,
             }
         elif isinstance(o, uuid.UUID):

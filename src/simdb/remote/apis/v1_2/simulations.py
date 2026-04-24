@@ -282,7 +282,12 @@ class SimulationList(Resource):
                         )
                     else:
                         path = Path(sim_file.uri.query["path"])
-                    sim_file.uri = convert_uri(sim_file.uri, path, config)
+                    if imas_remote_host:
+                        sim_file.uri = convert_uri(sim_file.uri, path, config)
+                    else:
+                        # No remote host configured — keep as local IMAS URI
+                        # pointing at the (possibly copied) staging path
+                        sim_file.uri.query.set("path", str(path))
 
         result = SimulationPostResponse(
             ingested=simulation.uuid, error=None, validation=None
@@ -353,6 +358,7 @@ class Simulation(Resource):
 
         sim_data.children = current_app.db.get_simulation_children_ref(simulation)
         sim_data.parents = current_app.db.get_simulation_parents_ref(simulation)
+
         return sim_data
 
     @requires_auth("admin")

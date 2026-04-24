@@ -125,7 +125,7 @@ class CustomValidator(cerberus.Validator):  # type: ignore
 
 def _load_schema(path: Path):
     if not path.exists():
-        return [{}]
+        return {}
 
     # load schema from file
     with path.open() as file:

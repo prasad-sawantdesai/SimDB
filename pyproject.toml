@@ -64,6 +64,7 @@ server = [
     "flask-restx==0.5",
     "python-magic~=0.4",
     "simplejson~=3.0",
+    "mcp[http]>=1.0",
 ]
 auth-ad = [
     "easyad>=1.0",
