@@ -63,6 +63,8 @@ server = [
     "flask-mail~=0.9.1",
     "flask-restx==0.5",
     "python-magic~=0.4",
+    "qdrant-client>=1.17.1",
+    "sentence-transformers>=2.7",
     "simplejson~=3.0",
 ]
 auth-ad = [

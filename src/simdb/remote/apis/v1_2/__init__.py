@@ -10,6 +10,7 @@ from simdb.remote.core.pydantic_utils import pydantic_validate
 from simdb.remote.core.typing import current_app
 from simdb.remote.models import StagingDirectoryResponse
 
+from .simulation_data import api as data_ns
 from .simulations import api as sim_ns
 
 api = Api(
@@ -31,7 +32,7 @@ api = Api(
 )
 
 api.add_namespace(sim_ns)
-namespaces = [metadata_ns, watcher_ns, file_ns, sim_ns]
+namespaces = [metadata_ns, watcher_ns, file_ns, sim_ns, data_ns]
 
 
 @api.route("/staging_dir", defaults={"sim_hex": None})
