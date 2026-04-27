@@ -9,7 +9,7 @@ Model: intfloat/e5-small-v2 (384-dim, asymmetric retrieval).
   This gives significantly better recall for short physics queries (Te, ne, q)
   against long field description passages.
 
-  To switch models: change _EMBED_MODEL and bump _COLLECTION_VERSION.
+  To switch models: change _EMBED_MODEL (and recreate the Qdrant collection if dim changes).
   The version suffix forces a fresh collection so stale MiniLM vectors are
   not mixed with e5 vectors.
 """
@@ -19,8 +19,7 @@ import uuid as _uuid
 
 # ─── Qdrant vector store (optional, graceful degradation if unavailable) ──── #
 _EMBED_MODEL = "intfloat/e5-small-v2"
-_COLLECTION_VERSION = "e5v2"
-_QDRANT_COLLECTION = f"simdb_fields_{_COLLECTION_VERSION}"
+_QDRANT_COLLECTION = "simdb_fields"
 _VECTOR_DIM = 384  # e5-small-v2  384-dim
 _ENCODE_BATCH_SIZE = 256  # sentence-transformers batch size for GPU/CPU efficiency
 
