@@ -502,7 +502,7 @@ class SimulationImasFieldsSearch(Resource):
                     str(simulation.uuid), str(imas_file.uuid), ids_result
                 )
 
-            vec = qdrant_store._embedder.encode(q, show_progress_bar=False).tolist()
+            vec = qdrant_store.encode_query(q)
             response = qdrant_store._qdrant_client.query_points(
                 collection_name=qdrant_store._QDRANT_COLLECTION,
                 query=vec,

@@ -132,6 +132,11 @@ def create_app(
     for version, blueprint in blueprints.items():
         app.register_blueprint(blueprint, url_prefix=f"/{version}")
 
+    # Preload Qdrant client + embedding model in background which will download/load model.
+    import threading as _threading
+    from simdb.remote.apis.v1_2 import qdrant_store as _qdrant_store
+    _threading.Thread(target=_qdrant_store._init_qdrant, daemon=True, name="qdrant-preload").start()
+
     if not _ALEMBIC_INI.exists():
         raise RuntimeError(f"Alembic configuration not found at {_ALEMBIC_INI}.")
 
