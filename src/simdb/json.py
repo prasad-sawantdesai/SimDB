@@ -49,4 +49,9 @@ class CustomEncoder(json.JSONEncoder):
             return {"_type": "uuid.UUID", "hex": o.hex}
         elif isinstance(o, enum.Enum):
             return o.value
+        elif isinstance(o, np.ndarray):
+            if np.issubdtype(o.dtype, np.number):
+                valid = o[~np.isnan(o)] if np.issubdtype(o.dtype, np.floating) else o
+                return {"min": float(valid.min()), "max": float(valid.max())}
+            return o.tolist()
         return super().default(o)

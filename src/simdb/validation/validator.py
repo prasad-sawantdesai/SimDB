@@ -1,6 +1,7 @@
 import re
+import warnings
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import cerberus
 import numpy as np
@@ -8,6 +9,7 @@ import yaml
 
 from simdb.config import Config, ConfigError
 from simdb.database.models.simulation import Simulation
+from simdb.remote.models import RangeValue
 
 ValidatorBase = cast(Any, cerberus.Validator)
 
@@ -65,7 +67,8 @@ class CustomValidator(ValidatorBase):
         if comparison is None:
             return
         if isinstance(value, np.ndarray):
-            value = value[~np.isnan(value)]
+            if np.issubdtype(value.dtype, np.floating):
+                value = value[~np.isnan(value)]
             if value.size == 0:
                 self._error(field, "Values in numpy array are NaN or empty")
             if not getattr(value, comparator)(comparison).all():
@@ -112,25 +115,31 @@ class CustomValidator(ValidatorBase):
     def _normalize_coerce_numpy(cls, value):
         if isinstance(value, np.ndarray):
             return value
+        elif isinstance(value, dict) and "min" in value and "max" in value:
+            return np.array([value["min"], value["max"]], dtype=float)
+        elif isinstance(value, RangeValue):
+            return np.array([float(value.min), float(value.max)])
         elif isinstance(value, str):
             return np.fromstring(value[1:-1], sep=" ")
         else:
             return np.array(value)
 
 
-def _load_schema(path: Path):
+def _load_schema(path: Union[Path, str]):
+    path = Path(path)
     if not path.exists():
-        return [{}]
+        warnings.warn(f"Validation schema not found: {path}", stacklevel=2)
+        return {}
 
-    # load schema from file
     with path.open() as file:
         try:
             schema = yaml.load(file, Loader=yaml.SafeLoader)
-            return schema
         except yaml.YAMLError as err:
             raise LoadError(
-                f"Failed to read validation schema from file {file}"
+                f"Failed to read validation schema from file {path}"
             ) from err
+
+    return schema
 
 
 class Validator:
@@ -141,7 +150,7 @@ class Validator:
     def validation_schemas(
         cls, config: Config, simulation: Optional[Simulation], path=None
     ) -> List[Dict]:
-        root = Path(
+        configured_path = Path(
             str(
                 config.get_option(
                     "validation.path", default=str(config.config_directory)
@@ -149,11 +158,19 @@ class Validator:
             )
         )
 
+        if not configured_path.is_file():
+            raise ConfigError(
+                f"validation.path '{configured_path}' is not a valid file. "
+                "Set validation.path to the full path of your validation "
+                "schema YAML file."
+            )
+        default_schema_path = configured_path
+
         paths = []
         if path:
             paths.append(path)
         else:
-            paths.append(root / "validation-schema.yaml")
+            paths.append(default_schema_path)
 
         # Look for config sections like [validation "key=value"] and see if the
         # simulationhas metadata matching the given test. If matching, adding the

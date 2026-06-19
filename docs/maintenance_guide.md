@@ -210,15 +210,16 @@ SSL_ENABLED = True
 
 ...
 ```
-Now create a validation schema in the application configuration directory, which can be located by using:
+Now create a validation schema and configure its path. Set `validation.path` in the server config to point directly to your YAML schema file:
 
+```ini
+[validation]
+path = /path/to/iter_scenarios_validation.yaml
 ```
-dirname "$(simdb config path)"
-```
-In this directory, you should create a file ‘validation-schema.yaml’ specifying the validation schema.
-Example of validation-schema.yaml:
 
-```
+Example schema file:
+
+```yaml
 description:
   required: true
   type: string
