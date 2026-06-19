@@ -159,18 +159,18 @@ def _open_legacy(uri: URI) -> DBEntry:
                 data_version=version,
             )
         except Exception as err:
-            raise ImasError(f"failed to open IMAS data with URI {uri}") from err
+            raise ImasError(f"failed to open IMAS data with URI {uri}: {str(err)}") from err
     else:
         try:
             entry = imas.DBEntry(
                 backend_id, database, int(shot), int(run), data_version=version
             )
         except Exception as err:
-            raise ImasError(f"failed to open IMAS data with URI {uri}") from err
+            raise ImasError(f"failed to open IMAS data with URI {uri}: {str(err)}") from err
     try:
         entry.open()
     except RuntimeError as err:
-        raise ImasError(f"failed to open IMAS data with URI {uri}") from err
+        raise ImasError(f"failed to open IMAS data with URI {uri}: {str(err)}") from err
     return entry
 
 
@@ -200,7 +200,7 @@ def open_imas(uri: URI) -> DBEntry:
     try:
         entry = imas.DBEntry(str(uri), "r")
     except Exception as err:
-        raise ImasError(f"failed to open IMAS data with URI {uri}") from err
+        raise ImasError(f"failed to open IMAS data with URI {uri}: {str(err)}") from err
 
     return entry
 
