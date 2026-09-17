@@ -53,13 +53,13 @@ class AliasCommandGroup(click.Group):
 @click.option("-c", "--config-file", type=click.File("r"), help="Config file to load.")
 @click.pass_context
 def cli(ctx, debug: bool, verbose: bool, config_file: TextIO):
+    global g_debug
+    g_debug = debug
     if not ctx.obj:
         ctx.obj = Config()
         ctx.obj.load(config_file)
         ctx.obj.debug = debug
         ctx.obj.verbose = verbose
-    global g_debug
-    g_debug = debug
 
 
 @cli.command(hidden=True)
@@ -85,10 +85,19 @@ def main() -> None:
 
     :return: None
     """
+    global g_debug
+    g_debug = False
     try:
-        cli()
+        # Let this entry point handle errors so debug mode retains tracebacks.
+        sys.exit(cli(standalone_mode=False))
     except Exception as ex:
-        click.echo(f"Error: {ex}", err=True)
         if g_debug:
-            raise ex
+            raise
+        if isinstance(ex, click.ClickException):
+            ex.show()
+            sys.exit(ex.exit_code)
+        if isinstance(ex, click.Abort):
+            click.echo("Aborted!", err=True)
+        else:
+            click.echo(f"Error: {ex}", err=True)
         sys.exit(1)

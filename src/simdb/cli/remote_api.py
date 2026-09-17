@@ -870,7 +870,7 @@ class RemoteAPI:
         chunk_size: int,
         out_stream: IO,
         type: DataType,
-    ):
+    ) -> int:
         msg = f"Uploading file {path} "
         print(msg, file=out_stream, end="")
         num_chunks = 0
@@ -883,6 +883,7 @@ class RemoteAPI:
         if num_chunks == 0:
             # empty file
             self._send_chunk(0, b"", chunk_size, uuid, file_type, sim_data)
+            num_chunks = 1
         if type == DataType.FILE:
             self.post(
                 "files",
@@ -905,6 +906,7 @@ class RemoteAPI:
             file=out_stream,
             flush=True,
         )
+        return num_chunks
 
     def _send_chunk(
         self,
@@ -989,6 +991,13 @@ class RemoteAPI:
                         print(f"Skipping IDS data {file}", file=out_stream, flush=True)
                         continue
                     ids_list = simulation.meta_dict().get("input_ids", [])
+                    if isinstance(ids_list, str):
+                        ids_list = [
+                            name.strip()
+                            for name in ids_list.strip("[]").split(",")
+                            if name.strip()
+                        ]
+                    num_chunks = 0
                     for path in imas_files(file.uri):
                         # Check if hdf5 ids_name is in ids_list
                         ids_name = Path(path).name.split(".")
@@ -1002,7 +1011,7 @@ class RemoteAPI:
                             f for f in sim_data["inputs"] if f.get("uuid") == file.uuid
                         )
                         sim_file["uri"] = f"file:{path}"
-                        self._push_file(
+                        num_chunks += self._push_file(
                             path,
                             file.uuid,
                             "input",
@@ -1019,6 +1028,7 @@ class RemoteAPI:
                             "obj_type": file.type,
                             "files": [
                                 {
+                                    "chunks": num_chunks,
                                     "file_type": "input",
                                     "file_uuid": file.uuid.hex,
                                     "ids_list": ids_list,
@@ -1046,6 +1056,13 @@ class RemoteAPI:
                         continue
 
                     ids_list = simulation.meta_dict().get("ids", [])
+                    if isinstance(ids_list, str):
+                        ids_list = [
+                            name.strip()
+                            for name in ids_list.strip("[]").split(",")
+                            if name.strip()
+                        ]
+                    num_chunks = 0
                     for path in imas_files(file.uri):
                         # Check if hdf5 ids_name is in ids_list
                         ids_name = Path(path).name.split(".")
@@ -1065,7 +1082,7 @@ class RemoteAPI:
                         )
                         if sim_file:
                             sim_file["uri"] = f"file:{path}"
-                        self._push_file(
+                        num_chunks += self._push_file(
                             path,
                             file.uuid,
                             "output",
@@ -1082,6 +1099,7 @@ class RemoteAPI:
                             "obj_type": file.type,
                             "files": [
                                 {
+                                    "chunks": num_chunks,
                                     "file_type": "output",
                                     "file_uuid": file.uuid.hex,
                                     "ids_list": ids_list,

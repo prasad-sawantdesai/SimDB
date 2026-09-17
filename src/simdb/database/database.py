@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any, List, Optional, Tuple, cast
 
 import appdirs
 import sqlalchemy.orm
-from alembic.config import Config as AlembicConfig
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
 from alembic.script import ScriptDirectory
@@ -33,7 +32,7 @@ from .models import Base
 from .models.file import File
 from .models.simulation import Simulation
 
-_ALEMBIC_INI = Path("alembic.ini")
+_MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
 
 
 class DatabaseError(RuntimeError):
@@ -60,8 +59,7 @@ def check_migrations(engine) -> str:
     :class:`DatabaseOutdatedError` if the database schema is behind the head
     revision.
     """
-    alembic_cfg = AlembicConfig(str(_ALEMBIC_INI))
-    script = ScriptDirectory.from_config(alembic_cfg)
+    script = ScriptDirectory(str(_MIGRATIONS_DIR))
     head_revision = script.get_current_head()
 
     with engine.connect() as conn:
@@ -87,9 +85,7 @@ def check_migrations(engine) -> str:
 
 def run_migrations(engine) -> None:
     """Run the database migrations."""
-    config = AlembicConfig(_ALEMBIC_INI)
-    config.set_main_option("script_location", "alembic")
-    script = ScriptDirectory.from_config(config)
+    script = ScriptDirectory(str(_MIGRATIONS_DIR))
 
     def upgrade(rev, context):
         return script._upgrade_revs("head", rev)

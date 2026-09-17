@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY uv.lock pyproject.toml alembic.ini ./
 COPY src/ ./src/
-COPY alembic/ ./alembic/
 RUN uv sync --locked --extra all
 
 ENV SIMDB_SITE_CONFIG_PATH=/app/config/simdb.cfg
