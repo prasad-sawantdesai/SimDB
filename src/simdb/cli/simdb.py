@@ -85,10 +85,25 @@ def main() -> None:
 
     :return: None
     """
+    # Ref: https://click.palletsprojects.com/en/stable/exceptions/
+    # standalone_mode=False: no auto exceptions, no implicit sys.exit().
     try:
-        cli()
+        rv = cli(standalone_mode=False)
+    except click.Abort:
+        # Ref: Abort -> "Aborted!" stderr, exit 1.
+        click.echo("Aborted!", err=True)
+        sys.exit(1)
+    except click.ClickException as ex:
+        # Ref: ClickException.show() + exit_code.
+        ex.show()
+        if g_debug:
+            raise
+        sys.exit(ex.exit_code)
     except Exception as ex:
         click.echo(f"Error: {ex}", err=True)
         if g_debug:
-            raise ex
+            raise
         sys.exit(1)
+    else:
+        # Ref: return value bubbled through, exit manually.
+        sys.exit(rv or 0)
