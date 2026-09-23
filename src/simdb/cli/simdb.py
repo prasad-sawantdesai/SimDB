@@ -90,7 +90,6 @@ def main() -> None:
     try:
         rv = cli(standalone_mode=False)
     except click.Abort:
-        # Ref: Abort -> "Aborted!" stderr, exit 1.
         click.echo("Aborted!", err=True)
         sys.exit(1)
     except click.ClickException as ex:
