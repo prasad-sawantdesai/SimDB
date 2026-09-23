@@ -86,7 +86,6 @@ def main() -> None:
     :return: None
     """
     # Ref: https://click.palletsprojects.com/en/stable/exceptions/
-    # standalone_mode=False: no auto exceptions, no implicit sys.exit().
     try:
         rv = cli(standalone_mode=False)
     except click.Abort:
