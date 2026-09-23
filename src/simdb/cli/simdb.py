@@ -94,7 +94,6 @@ def main() -> None:
         click.echo("Aborted!", err=True)
         sys.exit(1)
     except click.ClickException as ex:
-        # Ref: ClickException.show() + exit_code.
         ex.show()
         if g_debug:
             raise
