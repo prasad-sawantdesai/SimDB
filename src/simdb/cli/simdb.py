@@ -102,5 +102,4 @@ def main() -> None:
             raise
         sys.exit(1)
     else:
-        # Ref: return value bubbled through, exit manually.
         sys.exit(rv or 0)
