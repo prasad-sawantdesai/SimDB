@@ -1110,6 +1110,7 @@ class RemoteAPI:
                 "simulation": sim_data,
                 "add_watcher": add_watcher,
                 "uploaded_by": uploaded_by,
+                "pushed_by": self._username or getpass.getuser(),
             },
         )
         print("Success", file=out_stream, flush=True)

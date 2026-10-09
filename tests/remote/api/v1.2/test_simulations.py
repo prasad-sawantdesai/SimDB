@@ -840,3 +840,42 @@ def test_trace_endpoint(client):
     assert trace.replaces.replaces is not None
     assert trace.replaces.replaces.uuid == sim_v1.simulation.uuid
     assert trace.replaces.replaces.replaces is None
+
+
+def _get_uploaded_by(client, simulation_data):
+    rv_get = client.get(
+        f"/v1.2/simulation/{simulation_data.simulation.uuid.hex}", headers=HEADERS
+    )
+    assert rv_get.status_code == 200
+    result = SimulationDataResponse.model_validate(rv_get.json)
+    return result.metadata.as_dict()["uploaded_by"]
+
+
+def test_post_simulations_unauthenticated_records_pushed_by(client):
+    """With authentication type None the client's username is recorded."""
+    simulation_data = generate_simulation_data()
+    simulation_data.pushed_by = "alice"
+
+    rv = post_simulation(client, simulation_data, headers={})
+    assert rv.status_code == 200
+
+    assert _get_uploaded_by(client, simulation_data) == "alice"
+
+
+def test_post_simulations_unauthenticated_without_pushed_by(client):
+    simulation_data = generate_simulation_data()
+
+    rv = post_simulation(client, simulation_data, headers={})
+    assert rv.status_code == 200
+
+    assert _get_uploaded_by(client, simulation_data) == "anonymous"
+
+
+def test_post_simulations_authenticated_user_wins_over_pushed_by(client):
+    simulation_data = generate_simulation_data()
+    simulation_data.pushed_by = "alice"
+
+    rv = post_simulation(client, simulation_data)
+    assert rv.status_code == 200
+
+    assert _get_uploaded_by(client, simulation_data) == "admin"

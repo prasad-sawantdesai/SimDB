@@ -13,6 +13,7 @@ from simdb.remote.apis.v1_2.simulations import (
     SimulationPackage,
     SimulationTrace,
     ValidateSimulation,
+    get_uploaded_by,
 )
 from simdb.remote.apis.v1_2.simulations import SimulationList as SimulationListV12
 from simdb.remote.core.auth import User, requires_auth
@@ -90,9 +91,7 @@ class SimulationList(SimulationListV12):
         # Simulation Upload (Push) Date
         simulation.datetime = datetime.datetime.now()
 
-        uploaded_by = body.uploaded_by or user.email or user.name or "anonymous"
-
-        simulation.set_meta("uploaded_by", uploaded_by)
+        simulation.set_meta("uploaded_by", get_uploaded_by(body, user))
 
         if body.add_watcher:
             simulation.watchers.append(

@@ -366,6 +366,9 @@ class SimulationPostData(BaseModel):
     """Whether to add a watcher for this simulation."""
     uploaded_by: Optional[str] = None
     """User who uploaded the simulation."""
+    pushed_by: Optional[str] = None
+    """Username of the client user pushing the simulation, used for uploaded_by
+    when the server could not identify the user."""
 
 
 class ValidationResult(BaseModel):

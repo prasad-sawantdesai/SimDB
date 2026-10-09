@@ -141,6 +141,22 @@ def _set_alias(alias: str):
     return alias, next_id
 
 
+def get_uploaded_by(body: SimulationPostData, user: User) -> str:
+    """Return the name to record as uploaded_by for a pushed simulation.
+
+    An explicit uploaded_by (manifest responsible_name) is used first, then the
+    authenticated user. The username sent by the client is only used when the
+    server could not identify the user (e.g. authentication type None).
+    """
+    if body.uploaded_by:
+        return body.uploaded_by
+    if user.email:
+        return user.email
+    if user.name and user.name != "anonymous":
+        return user.name
+    return body.pushed_by or "anonymous"
+
+
 def _build_trace(sim_id: str) -> SimulationTraceData:
     simulation = current_app.db.get_simulation(sim_id)
     data = simulation.to_model_trace(recurse=False)
@@ -255,9 +271,7 @@ class SimulationList(Resource):
         # Simulation Upload (Push) Date
         simulation.datetime = datetime.datetime.now()
 
-        uploaded_by = body.uploaded_by or user.email or user.name or "anonymous"
-
-        simulation.set_meta("uploaded_by", uploaded_by)
+        simulation.set_meta("uploaded_by", get_uploaded_by(body, user))
 
         if body.add_watcher:
             simulation.watchers.append(
